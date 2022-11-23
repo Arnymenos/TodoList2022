@@ -1,28 +1,18 @@
-package com.example.todolist
+package com.example.procrastinate
 
-import android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_todo.view.*
+import com.example.procrastinate.databinding.ItemTodoBinding
 
 class TodoAdapter(
     private val todos: MutableList<Todo>
 ) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
 
-    class TodoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
-        return TodoViewHolder(
-            LayoutInflater.from(parent.context).inflate(
-                R.layout.item_todo,
-                parent,
-                false
-            )
-        )
-    }
+    inner class TodoViewHolder(val binding: ItemTodoBinding) : RecyclerView.ViewHolder(binding.root)
 
     fun addTodo(todo: Todo) {
         todos.add(todo)
@@ -36,23 +26,34 @@ class TodoAdapter(
         notifyDataSetChanged()
     }
 
-    private fun toggleStrikeThrough(tvTodoTitle: TextView, isChecked: Boolean) {
+    private fun toggleStrikeThrough(tvTodotitle: TextView, isChecked: Boolean) {
         if(isChecked) {
-            tvTodoTitle.paintFlags = tvTodoTitle.paintFlags or STRIKE_THRU_TEXT_FLAG
+            tvTodotitle.paintFlags = tvTodotitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
         } else {
-            tvTodoTitle.paintFlags = tvTodoTitle.paintFlags and STRIKE_THRU_TEXT_FLAG.inv()
+            tvTodotitle.paintFlags = tvTodotitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TodoViewHolder {
+        val binding = ItemTodoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return TodoViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
         val curTodo = todos[position]
-        holder.itemView.apply {
-            tvTodoTitle.text = curTodo.title
-            cbDone.isChecked = curTodo.isChecked
-            toggleStrikeThrough(tvTodoTitle, curTodo.isChecked)
-            cbDone.setOnCheckedChangeListener { _, isChecked ->
-                toggleStrikeThrough(tvTodoTitle, isChecked)
-                curTodo.isChecked = !curTodo.isChecked
+
+        with(holder) {
+            with(todos[position]) {
+
+                // Code war nicht replizierbar, angepasst nach https://www.geeksforgeeks.org/how-to-use-view-binding-in-recyclerview-adapter-class-in-android/
+
+                binding.tvTodoTitle.text = curTodo.title
+                binding.cbDone.isChecked = curTodo.isChecked
+                toggleStrikeThrough(binding.tvTodoTitle, curTodo.isChecked)
+                binding.cbDone.setOnCheckedChangeListener { _, isChecked ->
+                    toggleStrikeThrough(binding.tvTodoTitle, isChecked)
+                    curTodo.isChecked = !curTodo.isChecked
+                }
             }
         }
     }
@@ -61,21 +62,3 @@ class TodoAdapter(
         return todos.size
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
